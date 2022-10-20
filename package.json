@@ -7,7 +7,9 @@
     "dev": "next dev",
     "postinstall": "prisma generate",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "connect-db": "pscale connect bruised-banana main --port 3309",
+    "connect-db-shadow": "pscale connect bruised-banana bruised-banana-shadow --port 3310"
   },
   "dependencies": {
     "@prisma/client": "^4.4.0",
