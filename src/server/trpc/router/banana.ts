@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { router, publicProcedure } from "../trpc";
 
@@ -19,28 +20,110 @@ const getRandomBanana = () => {
 };
 
 export const bananaRouter = router({
-  getBananas: publicProcedure.query(() => {
+  bananaPair: publicProcedure.query(async ({ ctx }) => {
     const { firstBananaId, secondBananaId } = getTwoRandomBananaImagesIds();
+
     return {
-      firstBanana: {
-        id: firstBananaId,
-        imageUrl: `/bananaImages/${firstBananaId}.jpg`,
-      },
-      secondBanana: {
-        id: secondBananaId,
-        imageUrl: `/bananaImages/${secondBananaId}.jpg`,
-      },
+      firstBanana: await ctx.prisma.banana.upsert({
+        where: {
+          id: firstBananaId,
+        },
+        update: {},
+        create: {
+          id: firstBananaId,
+          imageUrl: `/bananaImages/${firstBananaId}.jpg`,
+          rating: 1200,
+        },
+      }),
+      secondBanana: await ctx.prisma.banana.upsert({
+        where: {
+          id: secondBananaId,
+        },
+        update: {},
+        create: {
+          id: secondBananaId,
+          imageUrl: `/bananaImages/${secondBananaId}.jpg`,
+          rating: 1200,
+        },
+      }),
     };
   }),
-  voteBanana: publicProcedure
+  round: publicProcedure
     .input(
       z.object({
-        votedForId: z.number(),
-        votedAgainstId: z.number(),
+        winnerId: z.number(),
+        loserId: z.number(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const voteInDb = await ctx.prisma.vote.create({ data: { ...input } });
-      return { succes: true, voteInDb };
+      const winnerBanana = await ctx.prisma.banana.findUnique({
+        where: {
+          id: input.winnerId,
+        },
+      });
+      const loserBanana = await ctx.prisma.banana.findUnique({
+        where: {
+          id: input.loserId,
+        },
+      });
+
+      if (!winnerBanana || !loserBanana) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Wrong id",
+        });
+      }
+
+      const { newWinnerRating, newLoserRating } = calcNewRatings(
+        winnerBanana.rating,
+        loserBanana.rating
+      );
+
+      await ctx.prisma.banana.update({
+        where: {
+          id: winnerBanana.id,
+        },
+        data: {
+          rating: newWinnerRating,
+        },
+      });
+
+      await ctx.prisma.banana.update({
+        where: {
+          id: loserBanana.id,
+        },
+        data: {
+          rating: newLoserRating,
+        },
+      });
+
+      return {
+        winner: { id: input.winnerId, rating: newWinnerRating },
+        loser: { id: input.loserId, rating: newLoserRating },
+      };
     }),
 });
+
+const expectedScore = (ratingA: number, ratingB: number) => {
+  const difference = ratingB - ratingA;
+  const ratioOfDifference = difference / 400;
+  const inverseOfExpectedScore = 1 + Math.pow(10, ratioOfDifference);
+  return 1 / inverseOfExpectedScore;
+};
+
+const calcNewRatings = (winnerRating: number, loserRating: number, K = 20) => {
+  const expected = expectedScore(winnerRating, loserRating);
+
+  const winnerScore = 1;
+  const loserScore = 0;
+
+  const newWinnerRating = Math.round(
+    winnerRating + K * (winnerScore - expected)
+  );
+  const newLoserRating = Math.round(winnerRating + K * (loserScore - expected));
+
+  return {
+    newWinnerRating,
+    newLoserRating,
+  };
+};

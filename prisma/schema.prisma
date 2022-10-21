@@ -13,8 +13,9 @@ datasource db {
   shadowDatabaseUrl    = env("DATABASE_URL_SHADOW")
 }
 
-model Vote {
-  id             String @id @default(cuid())
-  votedForId     Int
-  votedAgainstId Int
+model Banana {
+  id        Int   @id
+  imageUrl  String
+  rating    Int
+  updatedAt DateTime @updatedAt
 }
