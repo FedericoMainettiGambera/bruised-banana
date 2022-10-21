@@ -102,6 +102,13 @@ export const bananaRouter = router({
         loser: { id: input.loserId, rating: newLoserRating },
       };
     }),
+  results: publicProcedure.query(async ({ ctx }) => {
+    return await ctx.prisma.banana.findMany({
+      orderBy: {
+        rating: "desc",
+      },
+    });
+  }),
 });
 
 const expectedScore = (ratingA: number, ratingB: number) => {

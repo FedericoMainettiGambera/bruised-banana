@@ -1,10 +1,17 @@
-import { Banana } from "@prisma/client";
-import type { GetServerSideProps } from "next";
+import { NextPage } from "next";
 import Image from "next/image";
+import { trpc } from "../utils/trpc";
 
-const ResultsPage: React.FC<{
-  bananas: Banana[];
-}> = ({ bananas }) => {
+const ResultsPage: NextPage = () => {
+  const { data: bananas, isLoading, isError } = trpc.banana.results.useQuery();
+
+  if (isLoading) {
+    return <div>loading...</div>;
+  }
+  if (isError) {
+    return <div>error</div>;
+  }
+
   return (
     <div>
       <h1>Results</h1>
@@ -25,26 +32,3 @@ const ResultsPage: React.FC<{
 };
 
 export default ResultsPage;
-
-const getAllBananas = async () => {
-  return (
-    (await (
-      await prisma?.banana.findMany({
-        orderBy: {
-          rating: "desc",
-        },
-      })
-    )?.map((banana) => ({
-      id: banana.id,
-      imageUrl: banana.imageUrl,
-      rating: banana.rating,
-    }))) || []
-  );
-};
-
-export const getStaticProps: GetServerSideProps = async () => {
-  return {
-    props: { bananas: await getAllBananas() },
-    revalidate: 60,
-  };
-};
