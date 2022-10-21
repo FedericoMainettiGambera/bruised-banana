@@ -19,6 +19,7 @@ const ResultsPage: NextPage = () => {
         <div key={banana.id}>
           <div>{banana.id}</div>
           <div>{banana.rating} ELO</div>
+          <div>{banana.totalFights} total fights</div>
           <Image
             src={banana.imageUrl}
             alt="A bruised banana"

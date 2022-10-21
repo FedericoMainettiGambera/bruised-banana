@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `Banana` ADD COLUMN `totalFights` INTEGER NOT NULL DEFAULT 0;

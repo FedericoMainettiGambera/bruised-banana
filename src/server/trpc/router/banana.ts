@@ -48,7 +48,7 @@ export const bananaRouter = router({
       }),
     };
   }),
-  round: publicProcedure
+  fight: publicProcedure
     .input(
       z.object({
         winnerId: z.number(),
@@ -84,6 +84,7 @@ export const bananaRouter = router({
           id: winnerBanana.id,
         },
         data: {
+          totalFights: { increment: 1 },
           rating: newWinnerRating,
         },
       });
@@ -93,6 +94,7 @@ export const bananaRouter = router({
           id: loserBanana.id,
         },
         data: {
+          totalFights: { increment: 1 },
           rating: newLoserRating,
         },
       });

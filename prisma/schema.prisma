@@ -14,8 +14,9 @@ datasource db {
 }
 
 model Banana {
-  id        Int   @id
-  imageUrl  String
-  rating    Int
-  updatedAt DateTime @updatedAt
+  id          Int      @id
+  imageUrl    String
+  rating      Int
+  totalFights Int      @default(0)
+  updatedAt   DateTime @updatedAt
 }

@@ -5,7 +5,7 @@ import { trpc } from "../utils/trpc";
 const Home: NextPage = () => {
   const bananaPairQuery = trpc.banana.bananaPair.useQuery();
 
-  const voteMutation = trpc.banana.round.useMutation({
+  const voteMutation = trpc.banana.fight.useMutation({
     onSuccess: () => {
       bananaPairQuery.refetch();
     },
@@ -38,7 +38,7 @@ const Home: NextPage = () => {
           });
         }}
       >
-        <h2>{firstBanana.rating}</h2>
+        <h2>{firstBanana.rating} ELO, with {firstBanana.totalFights} fights</h2>
         <Image
           src={firstBanana.imageUrl}
           alt="A bruised banana"
@@ -54,7 +54,7 @@ const Home: NextPage = () => {
           });
         }}
       >
-        <h2>{secondBanana.rating}</h2>
+        <h2>{secondBanana.rating} ELO, with {secondBanana.totalFights} fights</h2>
         <Image
           src={secondBanana.imageUrl}
           alt="A bruised banana"
