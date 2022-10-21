@@ -1,14 +1,15 @@
+import { z } from "zod";
 import { router, publicProcedure } from "../trpc";
 
 const AMOUNT_OF_BANANA_IMAGES = 24;
 
 const getTwoRandomBananaImagesIds = () => {
-  const firstBanana = getRandomBanana();
-  let secondBanana = getRandomBanana();
-  while (secondBanana === firstBanana) {
-    secondBanana = getRandomBanana();
+  const firstBananaId = getRandomBanana();
+  let secondBananaId = getRandomBanana();
+  while (secondBananaId === firstBananaId) {
+    secondBananaId = getRandomBanana();
   }
-  return [firstBanana, secondBanana];
+  return { firstBananaId, secondBananaId };
 };
 
 const getRandomBanana = () => {
@@ -19,16 +20,27 @@ const getRandomBanana = () => {
 
 export const bananaRouter = router({
   getBananas: publicProcedure.query(() => {
-    const [firstBananaId, secondBananaId] = getTwoRandomBananaImagesIds();
-    return [
-      {
+    const { firstBananaId, secondBananaId } = getTwoRandomBananaImagesIds();
+    return {
+      firstBanana: {
         id: firstBananaId,
         imageUrl: `/bananaImages/${firstBananaId}.jpg`,
       },
-      {
+      secondBanana: {
         id: secondBananaId,
         imageUrl: `/bananaImages/${secondBananaId}.jpg`,
       },
-    ];
+    };
   }),
+  voteBanana: publicProcedure
+    .input(
+      z.object({
+        votedForId: z.number(),
+        votedAgainstId: z.number(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const voteInDb = await ctx.prisma.vote.create({ data: { ...input } });
+      return { succes: true, voteInDb };
+    }),
 });

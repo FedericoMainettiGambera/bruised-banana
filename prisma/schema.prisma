@@ -2,19 +2,19 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["referentialIntegrity"]
 }
 
 datasource db {
-  provider = "mysql"
-  url = env("DATABASE_URL")
+  provider             = "mysql"
+  url                  = env("DATABASE_URL")
   referentialIntegrity = "prisma"
-  shadowDatabaseUrl = env("DATABASE_URL_SHADOW")
+  shadowDatabaseUrl    = env("DATABASE_URL_SHADOW")
 }
 
-model Example {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Vote {
+  id             String @id @default(cuid())
+  votedForId     Int
+  votedAgainstId Int
 }
