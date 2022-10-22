@@ -10,6 +10,12 @@ const Home: NextPage = () => {
   const voteMutation = trpc.banana.fight.useMutation({
     onSuccess: () => {
       bananaPairQuery.refetch();
+      if (!votingContainer) {
+        return;
+      }
+
+      votingContainer.scrollLeft =
+        (votingContainer.scrollWidth - window.innerWidth) / 2;
     },
   });
 
@@ -67,6 +73,16 @@ const Home: NextPage = () => {
     );
   }, [votingScroll]);
 
+  useEffect(() => {
+    if (firstBananaScrollPercentage === 1) {
+      voteFirst();
+    }
+
+    if (secondBananaScrollPercentage === 1) {
+      voteSecond();
+    }
+  }, [firstBananaScrollPercentage, secondBananaScrollPercentage]);
+
   if (bananaPairQuery.isError) {
     return <div>Something went wrong</div>;
   }
@@ -93,9 +109,7 @@ const Home: NextPage = () => {
       <div className="flex flex-row items-center justify-center py-3">
         <span className="pr-1">IN QUALE IL</span>
         <Image src="/banana.png" alt="pixel banana" width={30} height={30} />
-        <span>
-          È PIÙ BRUTTO?
-        </span>
+        <span>È PIÙ BRUTTO?</span>
       </div>
       <div
         className="flex flex-row items-center overflow-x-scroll"
@@ -134,10 +148,6 @@ const BananaItem: React.FC<{
   banana: Banana;
   className?: string;
 }> = ({ banana, className }) => {
-  // const { innerHeight } = useWindowSizes();
-  // width={(innerHeight * 0.8 * 200) / 300}
-  // height={innerHeight * 0.8}
-
   return (
     <div
       className={`${className} rounded-2xl bg-yellow-banana`}
