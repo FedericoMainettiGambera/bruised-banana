@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=VT323&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6,12 +8,9 @@ html,
 body {
   padding: 0;
   margin: 0;
-  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
-    "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
-  height: 100%;
+  font-family: "VT323";
 }
-
-
-body {
-  @apply text-white bg-gray-800;
-}
+/* 
+div {
+  border: 1px solid red;
+} */

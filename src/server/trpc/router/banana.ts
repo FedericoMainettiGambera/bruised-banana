@@ -113,23 +113,19 @@ export const bananaRouter = router({
   }),
 });
 
-const expectedScore = (ratingA: number, ratingB: number) => {
-  const difference = ratingB - ratingA;
-  const ratioOfDifference = difference / 400;
-  const inverseOfExpectedScore = 1 + Math.pow(10, ratioOfDifference);
-  return 1 / inverseOfExpectedScore;
-};
-
 const calcNewRatings = (winnerRating: number, loserRating: number, K = 20) => {
-  const expected = expectedScore(winnerRating, loserRating);
+  const expectedScore =
+    1 / (1 + Math.pow(10, (winnerRating - loserRating) / 400));
 
   const winnerScore = 1;
   const loserScore = 0;
 
   const newWinnerRating = Math.round(
-    winnerRating + K * (winnerScore - expected)
+    winnerRating + K * (winnerScore - expectedScore)
   );
-  const newLoserRating = Math.round(winnerRating + K * (loserScore - expected));
+  const newLoserRating = Math.round(
+    winnerRating + K * (loserScore - expectedScore)
+  );
 
   return {
     newWinnerRating,
