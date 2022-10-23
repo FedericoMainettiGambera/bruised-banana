@@ -7,6 +7,7 @@ module.exports = {
       "green-success": "#2BC253",
       "orange-warning": "#FCBA03",
       black: "#000",
+      transparent: "transparent",
     },
     extend: {
       spacing: {

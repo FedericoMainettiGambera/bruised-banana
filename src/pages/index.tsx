@@ -311,14 +311,15 @@ const BananaItem: React.FC<{
   };
   return (
     <div
-      className={`${className} bg-black`}
+      className={`${className}`}
       style={{
         width: `${calcWidth()}px`,
         minWidth: `${calcWidth()}px`,
         height: `${(calcWidth() * 3) / 2}px`,
         minHeight: `${(calcWidth() * 3) / 2}px`,
         position: "relative",
-        border: "5px solid rgb(254, 183, 30)",
+        border: "5px solid rgb(0,0,0)",
+        backgroundColor: "rgba(0,0,0,0.6)",
       }}
     >
       <Image
