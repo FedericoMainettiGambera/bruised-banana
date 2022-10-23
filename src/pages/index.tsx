@@ -3,6 +3,7 @@ import type { NextPage } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import BananaImage from "../components/BananaImage";
 import { calcPercentage } from "../utils/calcPercentage";
 import { trpc } from "../utils/trpc";
 
@@ -15,6 +16,21 @@ const Home: NextPage = () => {
       scrollToCenter();
     },
   });
+
+  const voteFirst = () => {
+    setVotedBanana(firstBanana);
+    voteMutation.mutate({
+      winnerId: firstBanana.id,
+      loserId: secondBanana.id,
+    });
+  };
+  const voteSecond = () => {
+    setVotedBanana(secondBanana);
+    voteMutation.mutate({
+      winnerId: secondBanana.id,
+      loserId: firstBanana.id,
+    });
+  };
 
   const scrollToCenter = () => {
     if (!votingContainer) {
@@ -89,12 +105,13 @@ const Home: NextPage = () => {
 
   const calcBackgroundColorOnPercentage = (percentage: number) => {
     const yellowBanana = { red: 254, green: 218, blue: 30 };
-    const orange = { red: 254, green: 183, blue: 30 };
+    const white = { red: 255, green: 255, blue: 255 };
+    // const orange = { red: 254, green: 183, blue: 30 };
 
     return `rgb(${
-      yellowBanana.red * (1 - percentage) + orange.red * percentage
-    }, ${yellowBanana.green * (1 - percentage) + orange.green * percentage}, ${
-      yellowBanana.blue * (1 - percentage) + orange.blue * percentage
+      white.red * (1 - percentage) + yellowBanana.red * percentage
+    }, ${white.green * (1 - percentage) + yellowBanana.green * percentage}, ${
+      white.blue * (1 - percentage) + yellowBanana.blue * percentage
     })`;
   };
 
@@ -120,6 +137,7 @@ const Home: NextPage = () => {
       </div>
     );
   }
+
   if (bananaPairQuery.isLoading) {
     return (
       <div className="flex h-screen w-screen flex-col items-center justify-center bg-yellow-banana">
@@ -135,7 +153,7 @@ const Home: NextPage = () => {
     }
     return (
       <div className="flex h-screen w-screen flex-col items-center justify-center bg-green-success">
-        <BananaItem banana={votedBanana} />
+        <BananaImage banana={votedBanana} />
         <div className="pt-4 text-4xl">VOTING</div>
       </div>
     );
@@ -143,35 +161,20 @@ const Home: NextPage = () => {
 
   const { firstBanana, secondBanana } = bananaPairQuery.data;
 
-  const voteFirst = () => {
-    setVotedBanana(firstBanana);
-    voteMutation.mutate({
-      winnerId: firstBanana.id,
-      loserId: secondBanana.id,
-    });
-  };
-  const voteSecond = () => {
-    setVotedBanana(secondBanana);
-    voteMutation.mutate({
-      winnerId: secondBanana.id,
-      loserId: firstBanana.id,
-    });
-  };
-
   return (
     <div
       style={{
         height: "100vh",
-        background: `linear-gradient(90deg, ${calcBackgroundColorOnPercentage(
-          firstBananaScrollPercentage
-        )}, #FEDA1E 35%, #FEDA1E 65%, ${calcBackgroundColorOnPercentage(
-          secondBananaScrollPercentage
-        )} 100%)`,
+        // background: `linear-gradient(90deg, ${calcBackgroundColorOnPercentage(
+        //   firstBananaScrollPercentage
+        // )}, white 25%, white 75%, ${calcBackgroundColorOnPercentage(
+        //   secondBananaScrollPercentage
+        // )} 100%)`,
       }}
     >
-      <div className="flex flex-col items-center justify-center" ref={titleRef}>
+      <div className="justify-cente flex flex-col items-center" ref={titleRef}>
         <div
-          className="flex w-full flex-row items-center justify-between"
+          className="flex w-full flex-row items-center justify-between bg-yellow-banana"
           style={{ borderBottom: "2px solid black" }}
         >
           <div className="whitespace-nowrap pl-3 text-2xl">
@@ -240,12 +243,12 @@ const Home: NextPage = () => {
               </span>
             </div>
           )}
-          <BananaItem
+          <BananaImage
             className="mr-4"
             banana={firstBanana}
             isLoading={bananaPairQuery.isFetching}
           />
-          <BananaItem
+          <BananaImage
             className="ml-4"
             banana={secondBanana}
             isLoading={bananaPairQuery.isFetching}
@@ -284,50 +287,13 @@ const Home: NextPage = () => {
         </div>
       </div>
       <div
-        className="flex w-full flex-row items-center justify-center"
+        className="flex w-full flex-row items-center justify-center border-b-4 border-b-yellow-banana m-[-4px]"
         ref={footerRef}
       >
         <Link href="/results">
           <a className="pb-2 text-xl">RESULTS</a>
         </Link>
       </div>
-    </div>
-  );
-};
-
-const BananaItem: React.FC<{
-  banana: Banana;
-  className?: string;
-  isLoading?: boolean;
-}> = ({ banana, className, isLoading = false }) => {
-  const calcWidth = () => {
-    const isMobile = window.innerWidth < window.innerHeight;
-
-    if (isMobile) {
-      return window.innerWidth * 0.8;
-    }
-
-    return window.innerWidth * 0.3;
-  };
-  return (
-    <div
-      className={`${className}`}
-      style={{
-        width: `${calcWidth()}px`,
-        minWidth: `${calcWidth()}px`,
-        height: `${(calcWidth() * 3) / 2}px`,
-        minHeight: `${(calcWidth() * 3) / 2}px`,
-        position: "relative",
-        border: "5px solid rgb(0,0,0)",
-        backgroundColor: "rgba(0,0,0,0.6)",
-      }}
-    >
-      <Image
-        src={isLoading ? "/banana.png" : banana.imageUrl}
-        alt="A bruised banana"
-        layout={"fill"}
-        objectFit={"contain"}
-      />
     </div>
   );
 };
