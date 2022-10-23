@@ -113,7 +113,7 @@ export const bananaRouter = router({
   }),
 });
 
-const calcNewRatings = (winnerRating: number, loserRating: number, K = 20) => {
+const calcNewRatings = (winnerRating: number, loserRating: number, K = 60) => {
   const expectedScore =
     1 / (1 + Math.pow(10, (winnerRating - loserRating) / 400));
 
