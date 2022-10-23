@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { router, publicProcedure } from "../trpc";
 
-const AMOUNT_OF_BANANA_IMAGES = 24;
+const AMOUNT_OF_BANANA_IMAGES = 74;
 
 const getTwoRandomBananaImagesIds = () => {
   const firstBananaId = getRandomBanana();
@@ -31,7 +31,7 @@ export const bananaRouter = router({
         update: {},
         create: {
           id: firstBananaId,
-          imageUrl: `/bananaImages/${firstBananaId}.jpg`,
+          imageUrl: `/bananas-images/${firstBananaId}.jpg`,
           rating: 1200,
         },
       }),
@@ -42,7 +42,7 @@ export const bananaRouter = router({
         update: {},
         create: {
           id: secondBananaId,
-          imageUrl: `/bananaImages/${secondBananaId}.jpg`,
+          imageUrl: `/bananas-images/${secondBananaId}.jpg`,
           rating: 1200,
         },
       }),
