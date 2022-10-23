@@ -31,7 +31,7 @@ export const bananaRouter = router({
         update: {},
         create: {
           id: firstBananaId,
-          imageUrl: `/bananas-images/${firstBananaId}.jpg`,
+          imageUrl: `/bananas/${firstBananaId}.jpg`,
           rating: 1200,
         },
       }),
@@ -42,7 +42,7 @@ export const bananaRouter = router({
         update: {},
         create: {
           id: secondBananaId,
-          imageUrl: `/bananas-images/${secondBananaId}.jpg`,
+          imageUrl: `/bananas/${secondBananaId}.jpg`,
           rating: 1200,
         },
       }),
