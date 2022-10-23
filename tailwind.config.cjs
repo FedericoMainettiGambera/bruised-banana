@@ -4,6 +4,9 @@ module.exports = {
   theme: {
     colors: {
       "yellow-banana": "#FEDA1E",
+      "green-success": "#2BC253",
+      "orange-warning": "#FCBA03",
+      black: "#000",
     },
     extend: {
       spacing: {

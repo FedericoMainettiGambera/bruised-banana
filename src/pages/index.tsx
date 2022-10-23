@@ -19,6 +19,8 @@ const Home: NextPage = () => {
     },
   });
 
+  const titleRef = useRef<HTMLDivElement>(null);
+
   const [votingContainer, setVotingContainer] = useState<HTMLDivElement | null>(
     null
   );
@@ -73,6 +75,17 @@ const Home: NextPage = () => {
     );
   }, [votingScroll]);
 
+  const calcBackgroundColorOnPercentage = (percentage: number) => {
+    const yellowBanana = { red: 254, green: 218, blue: 30 };
+    const orange = { red: 254, green: 183, blue: 30 };
+
+    return `rgb(${
+      yellowBanana.red * (1 - percentage) + orange.red * percentage
+    }, ${yellowBanana.green * (1 - percentage) + orange.green * percentage}, ${
+      yellowBanana.blue * (1 - percentage) + orange.blue * percentage
+    })`;
+  };
+
   useEffect(() => {
     if (firstBananaScrollPercentage === 1) {
       voteFirst();
@@ -84,9 +97,14 @@ const Home: NextPage = () => {
   }, [firstBananaScrollPercentage, secondBananaScrollPercentage]);
 
   if (bananaPairQuery.isError) {
-    return <div>Something went wrong</div>;
+    return (
+      <div>
+        Something went wrong. I have no time to fix stupid problems. Reload the
+        page.
+      </div>
+    );
   }
-  if (bananaPairQuery.isLoading) {
+  if (bananaPairQuery.isLoading || bananaPairQuery.isFetching) {
     return <div>Loading Bananas...</div>;
   }
   const { firstBanana, secondBanana } = bananaPairQuery.data;
@@ -105,39 +123,112 @@ const Home: NextPage = () => {
   };
 
   return (
-    <div>
-      <div className="flex flex-row items-center justify-center py-3">
-        <span className="pr-1">IN QUALE IL</span>
-        <Image src="/banana.png" alt="pixel banana" width={30} height={30} />
-        <span>È PIÙ BRUTTO?</span>
+    <div
+      style={{
+        height: "100vh",
+        background: `linear-gradient(90deg, ${calcBackgroundColorOnPercentage(
+          firstBananaScrollPercentage
+        )}, #FEDA1E 35%, #FEDA1E 65%, ${calcBackgroundColorOnPercentage(
+          secondBananaScrollPercentage
+        )} 100%)`,
+      }}
+    >
+      <div className="flex flex-col items-center justify-center" ref={titleRef}>
+        <div
+          className="flex w-full flex-row items-center justify-between"
+          style={{ borderBottom: "2px solid black" }}
+        >
+          <div className="whitespace-nowrap pl-3 text-2xl">
+            % {(firstBananaScrollPercentage * 100).toFixed(0)}
+          </div>
+          <div className="flex flex-row items-center justify-center py-3 text-xl">
+            <span className="whitespace-nowrap">IN QUALE IL</span>
+            <span className="flex items-center justify-center px-2">
+              <Image
+                src="/banana.png"
+                alt="pixel banana"
+                width={30}
+                height={30}
+              />
+            </span>
+            <span className="whitespace-nowrap">È PIÙ BRUTTO?</span>
+          </div>
+          <div className="whitespace-nowrap pr-3 text-2xl">
+            {(secondBananaScrollPercentage * 100).toFixed(0)} %
+          </div>
+        </div>
+        <div>&lt; &lt; SWIPE TO CHOSE &gt; &gt;</div>
       </div>
       <div
-        className="flex flex-row items-center overflow-x-scroll"
-        ref={setVotingContainerRef}
+        className="flex items-center justify-center"
+        style={{
+          height: `${
+            window.innerHeight - (titleRef.current?.scrollHeight || 0)
+          }px`,
+        }}
       >
         <div
-          className="whitespace-nowrap bg-yellow-banana text-right"
-          style={{
-            minWidth: "100vw",
-            backgroundColor: `rgba(254, 218, 30, ${firstBananaScrollPercentage})`,
-          }}
-          onClick={voteFirst}
-          ref={firstChoosing}
+          className="my-auto flex flex-row items-center items-stretch overflow-x-scroll"
+          ref={setVotingContainerRef}
         >
-          choosing {(firstBananaScrollPercentage * 100).toFixed(0)}%
-        </div>
-        <BananaItem banana={firstBanana} />
-        <BananaItem banana={secondBanana} />
-        <div
-          className="whitespace-nowrap bg-yellow-banana text-left"
-          style={{
-            minWidth: "100vw",
-            backgroundColor: `rgba(254, 218, 30, ${secondBananaScrollPercentage})`,
-          }}
-          onClick={voteSecond}
-          ref={secondChoosing}
-        >
-          choosing {(secondBananaScrollPercentage * 100).toFixed(0)}%
+          <div
+            className="flex flex-row justify-between whitespace-nowrap"
+            style={{
+              minWidth: "80vw",
+            }}
+            onClick={voteSecond}
+            ref={firstChoosing}
+          >
+            <span className="flex w-full items-center justify-between pr-1 text-2xl">
+              <Image
+                src="/banana.png"
+                alt="pixel banana"
+                width={60}
+                height={60}
+              />
+              {firstBananaScrollPercentage < 0.18 ? (
+                <span>&lt; &lt; &lt;</span>
+              ) : firstBananaScrollPercentage < 0.33 ? (
+                <span>&lt; &lt; &lt; CHOSE</span>
+              ) : firstBananaScrollPercentage < 0.55 ? (
+                <span>&lt; &lt; &lt; ALMOST THERE</span>
+              ) : firstBananaScrollPercentage < 0.8 ? (
+                <span>&lt; &lt; &lt; KEEP SCROLLING</span>
+              ) : (
+                <span>&lt; &lt; YOU ARE ABOUT TO VOTE</span>
+              )}
+            </span>
+          </div>
+          <BananaItem className="mr-4" banana={firstBanana} />
+          <BananaItem className="ml-4" banana={secondBanana} />
+          <div
+            className="flex flex-row justify-between whitespace-nowrap"
+            style={{
+              minWidth: "80vw",
+            }}
+            onClick={voteSecond}
+            ref={secondChoosing}
+          >
+            <span className="flex w-full items-center justify-between pl-1 text-2xl">
+              {secondBananaScrollPercentage < 0.18 ? (
+                <span>&gt; &gt; &gt;</span>
+              ) : secondBananaScrollPercentage < 0.33 ? (
+                <span>CHOSE &gt; &gt; &gt;</span>
+              ) : secondBananaScrollPercentage < 0.55 ? (
+                <span>ALMOST THERE &gt; &gt; &gt;</span>
+              ) : secondBananaScrollPercentage < 0.8 ? (
+                <span>KEEP SCROLLING &gt; &gt; &gt;</span>
+              ) : (
+                <span>YOU ARE ABOUT TO VOTE &gt; &gt;</span>
+              )}
+              <Image
+                src="/banana.png"
+                alt="pixel banana"
+                width={60}
+                height={60}
+              />
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -148,15 +239,25 @@ const BananaItem: React.FC<{
   banana: Banana;
   className?: string;
 }> = ({ banana, className }) => {
+  const calcWidth = () => {
+    const isMobile = window.innerWidth < window.innerHeight;
+
+    if (isMobile) {
+      return window.innerWidth * 0.8;
+    }
+
+    return window.innerWidth * 0.3;
+  };
   return (
     <div
-      className={`${className} rounded-2xl bg-yellow-banana`}
+      className={`${className} bg-black`}
       style={{
-        width: `${window.innerWidth}px`,
-        minWidth: `${window.innerWidth}px`,
-        height: `${(window.innerWidth * 3) / 2}px`,
-        minHeight: `${(window.innerWidth * 3) / 2}px`,
+        width: `${calcWidth()}px`,
+        minWidth: `${calcWidth()}px`,
+        height: `${(calcWidth() * 3) / 2}px`,
+        minHeight: `${(calcWidth() * 3) / 2}px`,
         position: "relative",
+        border: "5px solid rgb(254, 183, 30)",
       }}
     >
       <Image

@@ -10,6 +10,10 @@ body {
   margin: 0;
   font-family: "VT323";
 }
+
+body {
+  height: 100vw;
+}
 /* 
 div {
   border: 1px solid red;
