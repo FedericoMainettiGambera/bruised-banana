@@ -1,6 +1,7 @@
 import { Banana } from "@prisma/client";
 import type { NextPage } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { calcPercentage } from "../utils/calcPercentage";
 import { trpc } from "../utils/trpc";
@@ -10,16 +11,27 @@ const Home: NextPage = () => {
   const voteMutation = trpc.banana.fight.useMutation({
     onSuccess: () => {
       bananaPairQuery.refetch();
-      if (!votingContainer) {
-        return;
-      }
 
-      votingContainer.scrollLeft =
-        (votingContainer.scrollWidth - window.innerWidth) / 2;
+      scrollToCenter();
     },
   });
 
+  const scrollToCenter = () => {
+    if (!votingContainer) {
+      return;
+    }
+    votingContainer.scrollLeft =
+      (votingContainer.scrollWidth - window.innerWidth) / 2;
+  };
+
+  useEffect(() => {
+    scrollToCenter();
+  }, [bananaPairQuery.fetchStatus]);
+
+  const [votedBanana, setVotedBanana] = useState<Banana | null>(null);
+
   const titleRef = useRef<HTMLDivElement>(null);
+  const footerRef = useRef<HTMLDivElement>(null);
 
   const [votingContainer, setVotingContainer] = useState<HTMLDivElement | null>(
     null
@@ -87,11 +99,15 @@ const Home: NextPage = () => {
   };
 
   useEffect(() => {
-    if (firstBananaScrollPercentage === 1) {
+    if (voteMutation.isLoading) {
+      return;
+    }
+
+    if (firstBananaScrollPercentage >= 0.98) {
       voteFirst();
     }
 
-    if (secondBananaScrollPercentage === 1) {
+    if (secondBananaScrollPercentage >= 0.98) {
       voteSecond();
     }
   }, [firstBananaScrollPercentage, secondBananaScrollPercentage]);
@@ -105,17 +121,37 @@ const Home: NextPage = () => {
     );
   }
   if (bananaPairQuery.isLoading) {
-    return <div>Loading Bananas...</div>;
+    return (
+      <div className="flex h-screen w-screen flex-col items-center justify-center bg-yellow-banana">
+        <Image src="/banana.png" alt="pixel banana" width={80} height={80} />
+        <div className="pt-4 text-xl">LOADING...</div>
+      </div>
+    );
   }
+
+  if (voteMutation.isLoading) {
+    if (!votedBanana) {
+      return <div />;
+    }
+    return (
+      <div className="flex h-screen w-screen flex-col items-center justify-center bg-green-success">
+        <BananaItem banana={votedBanana} />
+        <div className="pt-4 text-4xl">VOTING</div>
+      </div>
+    );
+  }
+
   const { firstBanana, secondBanana } = bananaPairQuery.data;
 
   const voteFirst = () => {
+    setVotedBanana(firstBanana);
     voteMutation.mutate({
       winnerId: firstBanana.id,
       loserId: secondBanana.id,
     });
   };
   const voteSecond = () => {
+    setVotedBanana(secondBanana);
     voteMutation.mutate({
       winnerId: secondBanana.id,
       loserId: firstBanana.id,
@@ -157,13 +193,15 @@ const Home: NextPage = () => {
             {(secondBananaScrollPercentage * 100).toFixed(0)} %
           </div>
         </div>
-        <div>&lt; &lt; SWIPE TO CHOSE &gt; &gt;</div>
+        <div className="pt-2 text-xl">&lt; &lt; SWIPE TO CHOSE &gt; &gt;</div>
       </div>
       <div
         className="flex items-center justify-center"
         style={{
           height: `${
-            window.innerHeight - (titleRef.current?.scrollHeight || 0)
+            window.innerHeight -
+            (titleRef.current?.scrollHeight || 0) -
+            (footerRef.current?.scrollHeight || 0)
           }px`,
         }}
       >
@@ -171,34 +209,37 @@ const Home: NextPage = () => {
           className="my-auto flex flex-row items-center items-stretch overflow-x-scroll"
           ref={setVotingContainerRef}
         >
-          <div
-            className="flex flex-row justify-between whitespace-nowrap"
-            style={{
-              minWidth: "80vw",
-            }}
-            onClick={voteSecond}
-            ref={firstChoosing}
-          >
-            <span className="flex w-full items-center justify-between pr-1 text-2xl">
-              <Image
-                src="/banana.png"
-                alt="pixel banana"
-                width={60}
-                height={60}
-              />
-              {firstBananaScrollPercentage < 0.18 ? (
-                <span>&lt; &lt; &lt;</span>
-              ) : firstBananaScrollPercentage < 0.33 ? (
-                <span>&lt; &lt; &lt; CHOSE</span>
-              ) : firstBananaScrollPercentage < 0.55 ? (
-                <span>&lt; &lt; &lt; ALMOST THERE</span>
-              ) : firstBananaScrollPercentage < 0.8 ? (
-                <span>&lt; &lt; &lt; KEEP SCROLLING</span>
-              ) : (
-                <span>&lt; &lt; YOU ARE ABOUT TO VOTE</span>
-              )}
-            </span>
-          </div>
+          {bananaPairQuery.isFetching ? (
+            ""
+          ) : (
+            <div
+              className="flex flex-row justify-between whitespace-nowrap"
+              style={{
+                minWidth: "80vw",
+              }}
+              ref={firstChoosing}
+            >
+              <span className="flex w-full items-center justify-between pr-1 text-2xl">
+                <Image
+                  src="/banana.png"
+                  alt="pixel banana"
+                  width={60}
+                  height={60}
+                />
+                {firstBananaScrollPercentage < 0.18 ? (
+                  <span>&lt; &lt; &lt;</span>
+                ) : firstBananaScrollPercentage < 0.33 ? (
+                  <span>&lt; &lt; &lt; CHOSE</span>
+                ) : firstBananaScrollPercentage < 0.55 ? (
+                  <span>&lt; &lt; &lt; ALMOST THERE</span>
+                ) : firstBananaScrollPercentage < 0.8 ? (
+                  <span>&lt; &lt; &lt; KEEP SCROLLING</span>
+                ) : (
+                  <span>&lt; &lt; YOU ARE ABOUT TO VOTE</span>
+                )}
+              </span>
+            </div>
+          )}
           <BananaItem
             className="mr-4"
             banana={firstBanana}
@@ -209,35 +250,46 @@ const Home: NextPage = () => {
             banana={secondBanana}
             isLoading={bananaPairQuery.isFetching}
           />
-          <div
-            className="flex flex-row justify-between whitespace-nowrap"
-            style={{
-              minWidth: "80vw",
-            }}
-            onClick={voteSecond}
-            ref={secondChoosing}
-          >
-            <span className="flex w-full items-center justify-between pl-1 text-2xl">
-              {secondBananaScrollPercentage < 0.18 ? (
-                <span>&gt; &gt; &gt;</span>
-              ) : secondBananaScrollPercentage < 0.33 ? (
-                <span>CHOSE &gt; &gt; &gt;</span>
-              ) : secondBananaScrollPercentage < 0.55 ? (
-                <span>ALMOST THERE &gt; &gt; &gt;</span>
-              ) : secondBananaScrollPercentage < 0.8 ? (
-                <span>KEEP SCROLLING &gt; &gt; &gt;</span>
-              ) : (
-                <span>YOU ARE ABOUT TO VOTE &gt; &gt;</span>
-              )}
-              <Image
-                src="/banana.png"
-                alt="pixel banana"
-                width={60}
-                height={60}
-              />
-            </span>
-          </div>
+          {bananaPairQuery.isFetching ? (
+            ""
+          ) : (
+            <div
+              className="flex flex-row justify-between whitespace-nowrap"
+              style={{
+                minWidth: "80vw",
+              }}
+              ref={secondChoosing}
+            >
+              <span className="flex w-full items-center justify-between pl-1 text-2xl">
+                {secondBananaScrollPercentage < 0.18 ? (
+                  <span>&gt; &gt; &gt;</span>
+                ) : secondBananaScrollPercentage < 0.33 ? (
+                  <span>CHOSE &gt; &gt; &gt;</span>
+                ) : secondBananaScrollPercentage < 0.55 ? (
+                  <span>ALMOST THERE &gt; &gt; &gt;</span>
+                ) : secondBananaScrollPercentage < 0.8 ? (
+                  <span>KEEP SCROLLING &gt; &gt; &gt;</span>
+                ) : (
+                  <span>YOU ARE ABOUT TO VOTE &gt; &gt;</span>
+                )}
+                <Image
+                  src="/banana.png"
+                  alt="pixel banana"
+                  width={60}
+                  height={60}
+                />
+              </span>
+            </div>
+          )}
         </div>
+      </div>
+      <div
+        className="flex w-full flex-row items-center justify-center"
+        ref={footerRef}
+      >
+        <Link href="/results">
+          <a className="pb-2 text-xl">RESULTS</a>
+        </Link>
       </div>
     </div>
   );
@@ -246,8 +298,8 @@ const Home: NextPage = () => {
 const BananaItem: React.FC<{
   banana: Banana;
   className?: string;
-  isLoading: boolean;
-}> = ({ banana, className, isLoading }) => {
+  isLoading?: boolean;
+}> = ({ banana, className, isLoading = false }) => {
   const calcWidth = () => {
     const isMobile = window.innerWidth < window.innerHeight;
 
