@@ -104,7 +104,7 @@ const Home: NextPage = () => {
       </div>
     );
   }
-  if (bananaPairQuery.isLoading || bananaPairQuery.isFetching) {
+  if (bananaPairQuery.isLoading) {
     return <div>Loading Bananas...</div>;
   }
   const { firstBanana, secondBanana } = bananaPairQuery.data;
@@ -199,8 +199,16 @@ const Home: NextPage = () => {
               )}
             </span>
           </div>
-          <BananaItem className="mr-4" banana={firstBanana} />
-          <BananaItem className="ml-4" banana={secondBanana} />
+          <BananaItem
+            className="mr-4"
+            banana={firstBanana}
+            isLoading={bananaPairQuery.isFetching}
+          />
+          <BananaItem
+            className="ml-4"
+            banana={secondBanana}
+            isLoading={bananaPairQuery.isFetching}
+          />
           <div
             className="flex flex-row justify-between whitespace-nowrap"
             style={{
@@ -238,7 +246,8 @@ const Home: NextPage = () => {
 const BananaItem: React.FC<{
   banana: Banana;
   className?: string;
-}> = ({ banana, className }) => {
+  isLoading: boolean;
+}> = ({ banana, className, isLoading }) => {
   const calcWidth = () => {
     const isMobile = window.innerWidth < window.innerHeight;
 
@@ -261,7 +270,7 @@ const BananaItem: React.FC<{
       }}
     >
       <Image
-        src={banana.imageUrl}
+        src={isLoading ? "/banana.png" : banana.imageUrl}
         alt="A bruised banana"
         layout={"fill"}
         objectFit={"contain"}
